@@ -1031,7 +1031,8 @@ class Player:
             other_player.next_attack_does_no_damage = True
         else:
             print("You already used your ultimate move!")
-            self.ultimate_move = True
+            return
+        self.ultimate_move = True
         if self.next_attack_does_no_damage:
             self.next_attack_no_damage(other_player)
 					
@@ -1251,16 +1252,16 @@ class Player:
             damage = random.randint(8, 15)
         else:
             damage = random.randint(5, 12)
-            damaged = self.damage(other_player, damage, other_player.damage_reduction, other_player.armour, self.charge)
-            if damage >= 12 and damaged and not other_player.small_bleeding:
-                print(f"Critical Hit! {other_player.name} is now bleeding!")
-                other_player.small_bleeding = True
-            if self.assassination_mode and damaged:
-                self.big_dagger += 1
-                print(f"1 big dagger is stuck in {other_player.name}!")
-            elif not self.assassination_mode and damaged:
-                self.daggers += 1
-                print(f"1 dagger is stuck in {other_player.name}!")
+        damaged = self.damage(other_player, damage, other_player.damage_reduction, other_player.armour, self.charge)
+        if damage >= 12 and damaged and not other_player.small_bleeding:
+            print(f"Critical Hit! {other_player.name} is now bleeding!")
+            other_player.small_bleeding = True
+        if self.assassination_mode and damaged:
+            self.big_dagger += 1
+            print(f"1 big dagger is stuck in {other_player.name}!")
+        elif not self.assassination_mode and damaged:
+            self.daggers += 1
+            print(f"1 dagger is stuck in {other_player.name}!")
     def multiple_throw_attack(self, other_player):
         if self.assassination_mode:
             damage = 4 * random.randint(2, 4)
@@ -1432,13 +1433,13 @@ class Player:
             self.mirror_move = True
         
     def shotgun_shoot_attack(self, other_player):
-        if other_player.charge or self.charge or self.shotgunpassive:
+        if other_player.charge or self.ultimate_move or self.shotgunpassive:
             damage = random.randint(13, 18)
-            if self.shotgunpassive and self.charge or self.shotgunpassive and other_player.charge:
+            if self.shotgunpassive and not self.ultimate_move or self.shotgunpassive and not other_player.charge:
                 damage += 5 
         else:
             damage = random.randint(7, 12)
-        damaged = self.damage(other_player, damage, other_player.damage_reduction, other_player.armour, self.charge)
+        damaged = self.damage(other_player, damage, other_player.damage_reduction, other_player.armour, False)
         if self.shotgunpassive and damaged:
             print(f"{self.name} dealt 5 more damage due to the shotgun passive!")
         if not self.traps_placed == 0 and damaged:
@@ -1454,7 +1455,6 @@ class Player:
             self.next_attack_no_damage(other_player)
     def roll_forward(self, other_player):
         if not self.ultimate_move and not other_player.royal_guards_summoned:
-            self.charge = True
             self.ultimate_move = True
             print(f"{self.name} rolled forward!")
         elif other_player.royal_guards_summoned:
@@ -1577,7 +1577,6 @@ class Player:
             other_player.medium_bleeding = True
             self.charge = True
             print(f"{self.name} decided to drive under the influence, dealing {selfdamage} to the player, dealing {damage} damage to the opponent, getting close to the enemy, and causing the opponent to critically bleed!")
-            self.ultimate_move = True
         elif player_overdose == "2":
             self.overdosetwo = True
             print(f"{self.name} consumed more C10H15N!")
@@ -1588,6 +1587,7 @@ class Player:
             print(f"{self.name} peer pressured {other_player.name} causing them to be poisoned and confused!")
         else:
             print("Nothing Happened!")
+        self.ultimate_move = True
     def throw_bomb(self, other_player):
         if self.next_attack_does_no_damage:
             self.next_attack_no_damage(other_player)
