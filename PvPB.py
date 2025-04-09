@@ -115,7 +115,6 @@ class Player:
         self.spear_stun = 0
         self.grounded_turn = 0
         self.earthquake_attack = False
-        self.sniper_pierce = 0
         self.double_lightsaber_turns = 0
         self.double_lightsaber = False
         self.overdosetwo = False
@@ -125,7 +124,6 @@ class Player:
         self.overdose_turn = False
         self.medium_bleeding = False
         self.nuke_turns = 0
-        self.machine_gun_bleed = 0
         self.shadow_energy = False
         self.combo = 0
         self.previouscombo = 0
@@ -162,7 +160,6 @@ class Player:
         self.frostbite_counter = 0
         self.icicle_storm_stack = 0
         self.icicle_storm_damage = False
-        self.frostbite_damage = False
         self.frostbite_heal = False
         self.hyperthermia = False
         self.power_usage = 100
@@ -322,30 +319,17 @@ class Player:
             self.slippery_fields_turns1 += 1
         if game.slippery_fields2 and self.name in ['Player 2(W1)','Player 2(W2)','Player 2(W3)', 'Player 2(W4)', 'Player 2(W5)']:
             self.slippery_fields_turns2 +=1
-        if self.sniper_pierce >= 4 and other_player.armour_turn >= 0:
-            print("The sniper pierced through the opponent's armour!")
-            other_player.armour_turn = 0
-        if self.selected_weapon.name == "Sniper" and other_player.armour_turn >= 0:
-            self.sniper_pierce += 1
         if self.selected_weapon.name == "Red LightSaber" and not self.double_lightsaber:
             self.double_lightsaber_turns += 1
         if self.double_lightsaber_turns >= 7 and not self.double_lightsaber:
             self.double_lightsaber = True
             print(f"{self.name} entered double lightsaber mode")
-        if self.frostbite_counter >= 1 and not self.frostbite_damage:
-            self.frostbite_damage = True
-            print(f"{self.name} is suffering from frostbite! {self.name} is now taking continous damage!")
-        if self.frostbite_counter >= 3 and not self.frostbite_heal:
+        if self.frostbite_counter >= 1 and not self.frostbite_heal:
             self.frostbite_heal = True
             print(f"{self.name} is suffering from frostbite! {self.name} cannot heal up!")
         if self.frostbite_counter >= 5 and not self.hyperthermia:
             self.hyperthermia = True
             print(f"{self.name} is suffering from hyperthermia!")
-        if self.machine_gun_bleed >= 3 and not other_player.small_bleeding:
-            other_player.small_bleeding = True
-            print(f"{other_player.name} is now bleeding from the machine gun's passive!")
-        if self.selected_weapon.name == "Machine Gun" and not other_player.small_bleeding:
-            self.machine_gun_bleed += 1
         if self.power_usage < 15 and self.power_usage > -1:
             self.lord_used = True
             print("The Lord used all their power!")
@@ -392,8 +376,8 @@ class Player:
             print(f"The {other_player.selected_weapon.name} comes back towards {other_player.name}, dealing {damage} damage!")
             self.boomerang_hammer = False
         if self.bleeding and not other_player.health <= 0:
-            print(f"{self.name} takes 10 damage from bleeding!")
-            damage = 10
+            print(f"{self.name} takes 15 damage from bleeding!")
+            damage = 15
             self.health -= damage
         if self.small_bleeding and not other_player.health <= 0:
             damage = 3
@@ -407,14 +391,6 @@ class Player:
             damage = random.randint(3, 5)
             self.health -= damage
             print(f"The electric shower dealt {damage} damage!")
-        if other_player.bleeding and other_player.health < 0:
-            print(f"{other_player.name} takes 10 damage from bleeding!")
-            damage = 10
-            other_player.health -= damage
-        if self.selected_weapon.name == "Mirror":
-            damage = random.randint(2, 4)
-            other_player.health -= damage
-            print(f"{self.name}'s mirror self punched {other_player.name} and dealt {damage} damage!")
         if self.chained:
             damage = random.randint(4, 6)
             self.health -= damage
@@ -432,7 +408,7 @@ class Player:
                 print(f"{other_player.name} takes {damage} damage from poison!")
         if self.poison:
             self.poison_drug_turns += 1
-            damage = 4 * self.poison_drug_turns
+            damage = 4 * self.poison_drug_turns - 2
             self.health -= damage
             print(f"{self.name} takes {damage} damage from the C10H15N's poison!")
         if self.jokercardpowerturn >= 1:
@@ -446,22 +422,19 @@ class Player:
                 damage = random.randint(2, 3)
                 other_player.health -= damage
                 print(f"{self.name} threw 2 more cards and dealt {damage} damage!")  
-        if self.tastetherainbowconstantdamage and self.tastetherainbowturns <= 6:
+        if self.tastetherainbowconstantdamage and self.tastetherainbowturns <= 7:
             self.tastetherainbowturns += 1
-            damage = 1 + self.tastetherainbowturns
+            damage = self.tastetherainbowturns
             other_player.health -= damage
             print(f"{other_player.name} took {damage} damage from the constant damage of taste the rainbow!")
         if self.the_force and not self.the_force_turns >= 4:
             if self.focus_energy_power:
                 damage = random.randint(12, 17)
-                other_player.health -= damage
-                print(f"{self.name} used the force and dealt {damage} damage!")
-                return
             else:
                 damage = random.randint(9, 16)
-                other_player.health -= damage
-                print(f"{self.name} used the force and dealt {damage} damage!")
-                return
+            other_player.health -= damage
+            print(f"{self.name} used the force and dealt {damage} damage!")
+            return
         if other_player.the_force and not other_player.the_force_turns >= 4:
             print(f"{self.name} can't move because of {other_player.name} used the force!")
             other_player.the_force_turns += 1
@@ -518,10 +491,6 @@ class Player:
             print(f"{other_player.name} stepped into the trap! The trap dealt {damage} damage!")
             self.traps_placed -= 1
             print(f"Number of traps on the field: {self.traps_placed}")
-        if self.frostbite_damage:
-            damage = random.randint(1, 3)
-            self.health -= damage
-            print(f"{self.name} took {damage} damage due to frostbite!")
         if self.hyperthermia:
             damage = self.frostbite_counter
             self.health -= damage
@@ -530,12 +499,12 @@ class Player:
           damage = other_player.frostbite_counter
           other_player.health -= damage
           print(f"{other_player.name} took {damage} damage due to hyperthermia!")
-        if other_player.slippery_fields_turns1 >= 5 and self.name in ['Player 2(W1)','Player 2(W2)','Player 2(W3)','Player 2(W4)','Player 2(W5)']:
-          other_player.slippery_fields_turns1 -= 5
+        if other_player.slippery_fields_turns1 >= 6 and self.name in ['Player 2(W1)','Player 2(W2)','Player 2(W3)','Player 2(W4)','Player 2(W5)']:
+          other_player.slippery_fields_turns1 -= 6
           print(f"{self.name} is frozen in the fields!")
           return
-        if other_player.slippery_fields_turns2 >= 5 and self.name in ['Player 1(W1)','Player 1(W2)','Player 1(W3)','Player 1(W4)','Player 1(W5)']:
-          other_player.slippery_fields_turns2 -= 5
+        if other_player.slippery_fields_turns2 >= 6 and self.name in ['Player 1(W1)','Player 1(W2)','Player 1(W3)','Player 1(W4)','Player 1(W5)']:
+          other_player.slippery_fields_turns2 -= 6
           print(f"{self.name} is frozen in the fields!")
           return
         if other_player.shadow:
@@ -568,12 +537,9 @@ class Player:
         if self.confusion:
             self.confusion_turns += 1
             if self.confusion_turns >= 2:
-                print(f"{self.name} will shake off their confusion this turn!")
+                print(f"{self.name} shook off their confusion!")
                 self.confusion_turns -= 3
                 self.confusion = False
-            if random.randint(1, 10) <= 2:
-                print(f"{self.name} was confused and missed the attack!")
-                return 
             if random.randint(1, 10) < 3:
                 damage = 5
                 self.health -= damage
@@ -584,35 +550,34 @@ class Player:
         if self.shuriken_assassination and self.shuriken_assassination_turns < 2:
             if self.shuriken_assassination_turns == 0:
                 damage = sum(random.randint(2, 3) for _ in range(5)) + self.combo
-                self.combo += 3
+                self.combo += 5
                 self.shuriken_assassination_turns += 1
                 other_player.health -= damage
                 print(f"{self.name} assasinated {other_player.name} and dealt {damage} damage!")
                 return
             if self.shuriken_assassination_turns == 1:
                 damage = sum(self.combo for _ in range(2))
-                self.combo += 1
+                self.combo += 3
                 self.shuriken_assassination_turns += 1
                 other_player.health -= damage
                 print(f"{self.name} used the finishing blow against {other_player.name} and dealt {damage} damage!")
                 return
         if self.royal_guards_summoned:
-            damage = 3 * random.randint(1, 4)
+            damage = 3 * random.randint(2, 6)
             other_player.health -= damage
             print(f"{self.name}'s royal guards dealt {damage} damage!")
-        if other_player.royal_guards_summoned:
-            damage = 3 * random.randint(1, 4)
-            self.health -= damage
-            print(f"{other_player.name}'s royal guards dealt {damage} damage!")
         if self.selected_weapon.name == "Darts" and self.selected_weapon.speed > other_player.selected_weapon.speed:
             damage = random.randint(4, 6)
             other_player.health -= damage
             print(f"{other_player.name} lost {damage} from the Darts' passive!")
-        if self.selected_weapon.name == "C10H15N" and not self.overdosetwo and not self.overdosethree and self.health > 0:
+        if self.selected_weapon.name == "C10H15N":
             selfdamage = random.randint(2, 3)
-            damage = random.randint(6, 7)
+            if not self.overdosetwo and not self.overdosethree and self.health > 0:
+                damage = random.randint(6, 7)
+                other_player.health -= damage
+            else:
+                damage = 0
             self.health -= selfdamage
-            other_player.health -= damage
             print(f"{self.name} took {selfdamage} damage, and {other_player.name} took {damage} damage from C10H15N's passive!")
         if self.selected_weapon.name == "C10H15N" and self.overdosetwo and self.health > 0:
             selfdamage = random.randint(8, 12)
@@ -620,15 +585,11 @@ class Player:
             self.health -= selfdamage
             other_player.health -= damage
             print(f"{self.name} took {selfdamage} damage, and {other_player.name} took {damage} damage from C10H15N's passive!")
-        if self.selected_weapon.name == "C10H15N" and self.overdosethree and self.health > 0:
-            selfdamage = random.randint(1, 2)
-            damage = random.randint(2, 4)
-            self.health -= selfdamage
-            other_player.health -= damage
-            print(f"{self.name} took {selfdamage} damage, and {other_player.name} took {damage} damage from C10H15N's passive!(Reduced from Peer Pressure)")
-        if self.health >= 0 and self.selected_weapon.name == "Sword" and self.health <= 50 and not self.frostbite_heal:
+        if self.health > 0 and self.selected_weapon.name == "Sword" and not self.frostbite_heal:
             heal = random.randint(5, 6)
             self.health += heal
+            if self.health > 100:
+                self.health = 100
             print(f"{self.name} healed {heal} health from the swords passive!")
         if other_player.selected_weapon.name == "Bomb" and not self.health < 0 and not other_player.health < 0:
             if self.name in ['Player 1(W1)','Player 1(W2)','Player 1(W3)','Player 1(W4)','Player 1(W5)']:
@@ -641,7 +602,7 @@ class Player:
                 print(f"All of player 1's weapons took {damage} damage!")
                 print("(passive)")
             elif self.name in ['Player 2(W1)','Player 2(W2)', 'Player 2(W3)', 'Player 2(W4)','Player 2(W5)']:
-                damage = random.randint(1, 2)
+                damage = 1
                 game.player2.health -= damage
                 game.player4.health -= damage
                 game.player6.health -= damage
@@ -822,6 +783,12 @@ class Player:
                 "Invest": self.invest,
                 "Gamble": self.gamble,
                 "Spend": self.shop,
+            }
+        elif self.selected_weapon.name == "Poison Gas":
+            attacks = {
+                "Punch": self.punch_attack,
+                "Kick": self.kick_attack,
+                "Toxification": self.toxification,
             }
         if other_player.armour_turn >= 0 and other_player.bleeding:
             damage = random.randint(7, 9)
@@ -1759,9 +1726,7 @@ class Player:
         if self.next_attack_does_no_damage:
             self.next_attack_no_damage(other_player)
             return
-        damage = 1
-        other_player.health -= damage
-        print(f"{self.name} used taste the rainbow, dealing 1 damage, and causing the opponent to lose health gradually!")
+        print(f"{self.name} used taste the rainbow, causing the opponent to lose health gradually!")
         self.tastetherainbowconstantdamage = True
     def fiveleafclover(self, other_player):
         if self.ultimate_move:
@@ -1945,7 +1910,9 @@ class Player:
       
     def shop(self, other_player):
         print("HI")
-          
+    def toxification(self, other_player):
+        other_player.confusion = other_player.drowsy = other_player.small_bleeding = other_player.suffering = True
+        other_player.paralysed = other_player.burned = other_player.flashstun = True
         
 class Game:
     def __init__(self):
@@ -2016,14 +1983,15 @@ class Game:
             Weapon('Mirror', 670),
             Weapon('Shotgun', 320),
             Weapon('Big Sledgehammer', 20),
-            Weapon('C10H15N', 1000),
+            Weapon('C10H15N', 930),
             Weapon('Bomb', 560),
             Weapon('Shuriken', 775),
-            Weapon('Lucky Charms', 1500),
+            Weapon('Lucky Charms', 950),
             Weapon('Whip', 685),
             Weapon('Berserker Axe', 50),
             Weapon('Ice Wand', 535),
-            Weapon('Money', 1050)
+            Weapon('Money', 800),
+            Weapon('Poison Gas', 1000)
             ]
         # Ban stage
         self.ban_weapon(self.player1, weapons)
